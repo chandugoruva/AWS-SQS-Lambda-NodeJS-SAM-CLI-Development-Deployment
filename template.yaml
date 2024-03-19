@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  lambda-nodejs20.x
+
+  Sample SAM Template for lambda-nodejs20.x
+  
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 10
+
+Resources:
+  producerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      Architectures:
+        - x86_64
+      Events:
+        producer:
+          Type: Api
+          Properties:
+            Path: /producer
+            Method: get
+    Metadata:
+      DockerTag: nodejs20.x-v1
+      DockerContext: ./producer
+      Dockerfile: Dockerfile
+  receiverFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      Architectures:
+        - x86_64
+      Events:
+        receiver:
+          Type: Api
+          Properties:
+            Path: /receiver
+            Method: get
+    Metadata:
+      DockerTag: nodejs20.x-v1
+      DockerContext: ./receiver
+      Dockerfile: Dockerfile
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  producerApi:
+    Description: "API Gateway endpoint URL for Prod stage for Producer function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/producer/"
+  producerFunction:
+    Description: "Producer Lambda Function ARN"
+    Value: !GetAtt producerFunction.Arn
+  producerFunctionIamRole:
+    Description: "Implicit IAM Role created for Producer function"
+    Value: !GetAtt producerFunctionRole.Arn
+
+  receiverApi:
+    Description: "API Gateway endpoint URL for Prod stage for Receiver function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/receiver/"
+  receiverFunction:
+    Description: "Receiver Lambda Function ARN"
+    Value: !GetAtt receiverFunction.Arn
+  receiverFunctionIamRole:
+    Description: "Implicit IAM Role created for Receiver function"
+    Value: !GetAtt receiverFunctionRole.Arn
